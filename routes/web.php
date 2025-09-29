@@ -2,13 +2,17 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
-    return redirect()->route('auth.login');
+    if (Auth::check()) {
+        return redirect('/projects');
+    }
+    return redirect('/login');
 });
 
 Route::get('/dashboard', function () {
-    return redirect()->route('auth.index');
+    return redirect('/projects');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {

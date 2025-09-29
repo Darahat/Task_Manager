@@ -8,14 +8,19 @@ use Modules\Auth\Http\Controllers\ForgotPasswordController;
 
 // Guest routes (for non-authenticated users)
 Route::middleware('guest')->group(function () {
-    Route::get('login', [LoginController::class, 'create'])->name('auth.login');
+    Route::get('login', [LoginController::class, 'create'])->name('login'); // Standard Laravel login route
     Route::post('login', [LoginController::class, 'store'])->name('auth.login.store');
-    
-    Route::get('register', [RegisterController::class, 'create'])->name('auth.register');
+
+    Route::get('register', [RegisterController::class, 'create'])->name('register'); // Standard Laravel register route
     Route::post('register', [RegisterController::class, 'store'])->name('auth.register.store');
-    
-    Route::get('forgot-password', [ForgotPasswordController::class, 'create'])->name('auth.password.request');
-    Route::post('forgot-password', [ForgotPasswordController::class, 'store'])->name('auth.password.email');
+
+    Route::get('forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request'); // Standard Laravel forgot password route
+    Route::post('forgot-password', [ForgotPasswordController::class, 'store'])->name('password.email');
+
+    // Keep the auth.* routes for backward compatibility
+    Route::get('auth/login', [LoginController::class, 'create'])->name('auth.login');
+    Route::get('auth/register', [RegisterController::class, 'create'])->name('auth.register');
+    Route::get('auth/forgot-password', [ForgotPasswordController::class, 'create'])->name('auth.password.request');
 });
 
 // Authenticated routes
