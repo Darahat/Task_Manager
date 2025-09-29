@@ -7,10 +7,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\User;
+use Modules\TaskManagement\Database\Factories\ProjectFactory;
 
 class Project extends Model
 {
     use HasFactory;
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory()
+    {
+        return ProjectFactory::new();
+    }
 
     /**
      * The attributes that are mass assignable.

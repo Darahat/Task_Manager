@@ -1,61 +1,182 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Task Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A simple and efficient task management application built with Laravel 11 and modular architecture. This application allows you to organize your tasks into projects and manage them with ease.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- 🏗️ **Project Management**: Create and organize projects with custom colors
+- ✅ **Task Management**: Add, edit, delete, and reorder tasks within projects
+- 🎨 **Drag & Drop**: Reorder tasks easily with drag-and-drop functionality
+- 🔐 **User Authentication**: Secure login and registration system
+- 📱 **Responsive Design**: Works perfectly on desktop and mobile devices
+- 🎯 **Clean Interface**: Modern UI built with Tailwind CSS
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Prerequisites
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Before you begin, ensure you have the following installed on your system:
 
-## Learning Laravel
+- **PHP** (version 8.2 or higher)
+- **Composer** (PHP dependency manager)
+- **Node.js** and **npm** (for frontend assets)
+- **SQLite** (comes with PHP) or **MySQL** database
+- **Git** (for version control)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Installation Guide for Beginners
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Step 1: Clone the Repository
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+git clone https://github.com/Darahat/Task_Manager.git
+cd Task_Manager
+```
 
-## Laravel Sponsors
+### Step 2: Install PHP Dependencies
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+composer install
+```
 
-### Premium Partners
+### Step 3: Install Node.js Dependencies
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+npm install
+```
+
+### Step 4: Environment Setup
+
+1. Copy the example environment file:
+```bash
+copy .env.example .env
+```
+
+2. Generate application key:
+```bash
+php artisan key:generate
+```
+
+3. Open `.env` file in a text editor and configure your database settings:
+```env
+DB_CONNECTION=sqlite
+DB_DATABASE=database/database.sqlite
+```
+
+### Step 5: Database Setup
+
+1. Create the database file (for SQLite):
+```bash
+touch database/database.sqlite
+```
+
+2. Run database migrations:
+```bash
+php artisan migrate
+```
+
+3. (Optional) Seed the database with sample data:
+```bash
+php artisan db:seed
+```
+
+### Step 6: Build Frontend Assets
+
+```bash
+npm run build
+```
+
+### Step 7: Start the Application
+
+```bash
+php artisan serve
+```
+
+The application will be available at: `http://localhost:8000`
+
+## Usage
+
+### Getting Started
+
+1. **Register**: Create a new account at `/register`
+2. **Login**: Sign in to your account at `/login`
+3. **Create Project**: Click "Create Project" on the dashboard
+4. **Add Tasks**: Select a project and start adding tasks
+5. **Manage Tasks**: Drag and drop to reorder, edit, or delete tasks
+
+### Project Management
+
+- Create projects with custom names, descriptions, and colors
+- View all projects in a dropdown on the dashboard
+- Navigate directly to project tasks
+
+### Task Management
+
+- Add tasks with titles and descriptions
+- Mark tasks as completed/incomplete
+- Reorder tasks using drag-and-drop
+- Edit or delete existing tasks
+
+## Application Structure
+
+```
+task_management/
+├── app/                    # Core application files
+├── Modules/               # Modular components
+│   ├── Auth/             # Authentication module
+│   └── TaskManagement/   # Task management module
+├── database/             # Database migrations and seeders
+├── resources/            # Frontend assets and views
+│   ├── views/           # Blade templates
+│   ├── css/             # Stylesheets
+│   └── js/              # JavaScript files
+└── routes/               # Application routes
+```
+
+## Technology Stack
+
+- **Backend**: Laravel 11 (PHP Framework)
+- **Frontend**: Blade Templates + Tailwind CSS + jQuery
+- **Database**: SQLite (default) or MySQL
+- **Build Tool**: Vite
+- **Drag & Drop**: SortableJS
+- **Architecture**: Modular (using nwidart/laravel-modules)
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Permission Errors**: Make sure `storage/` and `bootstrap/cache/` are writable
+```bash
+chmod -R 775 storage bootstrap/cache
+```
+
+2. **Database Connection**: Ensure your `.env` file has correct database settings
+
+3. **Missing Dependencies**: Run `composer install` and `npm install` again
+
+4. **Cache Issues**: Clear application cache
+```bash
+php artisan optimize:clear
+```
+
+### Development Commands
+
+- **Clear Cache**: `php artisan optimize:clear`
+- **Generate Key**: `php artisan key:generate`
+- **Run Migrations**: `php artisan migrate`
+- **Rollback Migrations**: `php artisan migrate:rollback`
+- **Build Assets**: `npm run build` or `npm run dev`
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -am 'Add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
+5. Create a Pull Request
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+---
+
+**Developed with love ❤️ by Darahat**

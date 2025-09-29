@@ -26,13 +26,19 @@
                 @if($tasks->count() > 0)
                     <div id="task-list" class="space-y-3">
                         @foreach($tasks as $task)
-                            <div class="task-item bg-gray-50 border border-gray-200 rounded-lg p-4 cursor-move" data-id="{{ $task->id }}">
+                            <div class="task-item bg-gray-50 border-2 border-gray-200 rounded-lg p-4 cursor-move hover:border-indigo-300 transition-all duration-200" data-id="{{ $task->id }}">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center space-x-3">
-                                        <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                                        <!-- Drag Handle -->
+                                        <div class="drag-handle text-gray-400 hover:text-indigo-500 cursor-move">
+                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zM10 17a1 1 0 01-.707-.293l-3-3a1 1 0 011.414-1.414L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3A1 1 0 0110 17z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="w-8 h-8 bg-indigo-500 text-white rounded-full flex items-center justify-center text-sm font-bold priority-badge">
                                             {{ $task->priority }}
                                         </div>
-                                        <div>
+                                        <div class="flex-1">
                                             <h3 class="font-semibold text-gray-800">{{ $task->name }}</h3>
                                             <p class="text-sm text-gray-500">Created: {{ $task->created_at->format('M d, Y') }}</p>
                                         </div>
@@ -97,10 +103,22 @@
         let sortable;
         if (document.getElementById('task-list')) {
             sortable = new Sortable(document.getElementById('task-list'), {
-                animation: 150,
+                animation: 300,
                 ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                handle: '.drag-handle, .task-item',
+                onStart: function (evt) {
+                    // Add visual feedback when dragging starts
+                    document.body.classList.add('is-dragging');
+                },
                 onEnd: function (evt) {
-                    updateTaskOrder();
+                    // Remove visual feedback when dragging ends
+                    document.body.classList.remove('is-dragging');
+                    // Only update if the position actually changed
+                    if (evt.oldIndex !== evt.newIndex) {
+                        updateTaskOrder();
+                    }
                 }
             });
         }
@@ -123,9 +141,8 @@
             document.getElementById('taskName').focus();
         }
 
-            function editTask(id, name, project_id) {
+        function editTask(id, name, project_id) {
             editingTaskId = id;
-            // Remove the redundant line: project_id = project_id;
             document.getElementById('modalTitle').textContent = 'Edit Task';
             document.getElementById('taskName').value = name;
             document.getElementById('taskModal').classList.remove('hidden');
@@ -139,51 +156,114 @@
             editingTaskId = null;
         }
 
-        function deleteTask(id,project_id) {
+        function deleteTask(id, project_id) {
             if (confirm('Are you sure you want to delete this task?')) {
-                $.ajax({
+                // Show loading state
+                const taskElement = document.querySelector(`[data-id="${id}"]`);
+                if (taskElement) {
+                    taskElement.style.opacity = '0.5';
+                    taskElement.style.pointerEvents = 'none';
+                }
 
+                $.ajax({
                     url: `/projects/${project_id}/tasks/${id}`,
                     method: 'DELETE',
                     success: function(response) {
                         if (response.success) {
-                            location.reload();
+                            // Smooth removal animation
+                            if (taskElement) {
+                                taskElement.style.transform = 'translateX(-100%)';
+                                setTimeout(() => {
+                                    location.reload();
+                                }, 300);
+                            } else {
+                                location.reload();
+                            }
                         }
                     },
                     error: function() {
                         alert('Error deleting task. Please try again.');
+                        // Restore element state
+                        if (taskElement) {
+                            taskElement.style.opacity = '1';
+                            taskElement.style.pointerEvents = 'auto';
+                        }
                     }
                 });
             }
         }
 
         function updateTaskOrder() {
-    const taskIds = [];
-    const projectId = document.getElementById('project_id').value; // Get project ID
+            const taskIds = [];
+            const projectId = document.getElementById('project_id').value;
 
-    document.querySelectorAll('.task-item').forEach((item, index) => {
-        taskIds.push(item.getAttribute('data-id'));
-        const priorityBadge = item.querySelector('.w-8.h-8');
-        if (priorityBadge) {
-            priorityBadge.textContent = index + 1;
-        }
-    });
+            // Show loading indicator
+            const taskList = document.getElementById('task-list');
+            taskList.style.pointerEvents = 'none';
+            taskList.style.opacity = '0.7';
 
-    $.ajax({
-        url: `/projects/${projectId}/tasks/reorder`, // Fixed URL
-        method: 'POST',
-        data: {
-            task_ids: taskIds
-        },
-
-                success: function(response) {
-                    console.log('Tasks reordered successfully');
-                },
-                error: function() {
-                    console.error('Error reordering tasks');
-                    location.reload(); // Reload to revert changes
+            document.querySelectorAll('.task-item').forEach((item, index) => {
+                taskIds.push(item.getAttribute('data-id'));
+                // Update priority badge immediately for visual feedback
+                const priorityBadge = item.querySelector('.priority-badge');
+                if (priorityBadge) {
+                    priorityBadge.textContent = index + 1;
                 }
             });
+
+            $.ajax({
+                url: `/projects/${projectId}/tasks/reorder`,
+                method: 'POST',
+                data: {
+                    task_ids: taskIds,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    console.log('Tasks reordered successfully');
+                    // Show success feedback
+                    showNotification('Tasks reordered successfully!', 'success');
+                },
+                error: function(xhr) {
+                    console.error('Error reordering tasks:', xhr);
+                    showNotification('Error reordering tasks. Page will reload.', 'error');
+                    // Reload to revert changes on error
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                },
+                complete: function() {
+                    // Restore interaction
+                    taskList.style.pointerEvents = 'auto';
+                    taskList.style.opacity = '1';
+                }
+            });
+        }
+
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 transform translate-x-full transition-transform duration-300 ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+            }`;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(full)';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
         }
 
         // Handle form submission
@@ -268,15 +348,100 @@
 
 @push('styles')
 <style>
+    /* Enhanced Drag and Drop Styles */
     .sortable-ghost {
-        opacity: 0.4;
+        opacity: 0.3;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        transform: rotate(2deg) scale(0.98);
+        border: 2px dashed #4f46e5;
     }
+
+    .sortable-chosen {
+        cursor: grabbing !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        transform: scale(1.02);
+        z-index: 999;
+    }
+
+    .sortable-drag {
+        opacity: 1;
+        transform: rotate(-1deg);
+    }
+
+    /* Enhanced drag handle */
+    .drag-handle {
+        transition: all 0.2s ease;
+        cursor: grab;
+    }
+
+    .drag-handle:hover {
+        color: #4f46e5;
+        transform: translateX(2px);
+    }
+
+    .drag-handle:active {
+        cursor: grabbing;
+    }
+
+    /* Task item enhancements */
     .task-item {
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
+        position: relative;
     }
+
     .task-item:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transform: translateY(-1px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Body dragging state */
+    body.is-dragging {
+        cursor: grabbing;
+        user-select: none;
+    }
+
+    body.is-dragging * {
+        pointer-events: none;
+    }
+
+    body.is-dragging .task-item {
+        pointer-events: auto;
+    }
+
+    /* Priority badge enhancement */
+    .priority-badge {
+        transition: all 0.2s ease;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .task-item:hover .priority-badge {
+        transform: scale(1.1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Button hover enhancements */
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Notification animation */
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
     }
 </style>
 @endpush

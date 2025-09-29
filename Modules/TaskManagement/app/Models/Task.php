@@ -6,10 +6,19 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\User;
+use Modules\TaskManagement\Database\Factories\TaskFactory;
 
 class Task extends Model
 {
     use HasFactory;
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory()
+    {
+        return TaskFactory::new();
+    }
 
     /**
      * The attributes that are mass assignable.
