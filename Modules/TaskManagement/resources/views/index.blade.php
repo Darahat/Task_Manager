@@ -151,9 +151,8 @@
         }
 
             function editTask(id, name, project_id) {
-            console.log('editTask called with:', {id, name, project_id});
             editingTaskId = id;
-            console.log('editingTaskId set to:', editingTaskId);
+            // Remove the redundant line: project_id = project_id;
             document.getElementById('modalTitle').textContent = 'Edit Task';
             document.getElementById('taskName').value = name;
             document.getElementById('taskModal').classList.remove('hidden');
