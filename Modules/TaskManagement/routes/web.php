@@ -21,7 +21,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/projects/{project}/tasks', [TaskManagementController::class, 'store'])->name('taskmanagement.store');
     Route::get('/projects/{project}/tasks/{task}', [TaskManagementController::class, 'show'])->name('taskmanagement.show');
     Route::get('/projects/{project}/tasks/{task}/edit', [TaskManagementController::class, 'edit'])->name('taskmanagement.edit');
-    Route::put('/projects/{project}/tasks/{task}', [TaskManagementController::class, 'update'])->name('taskmanagement.update');
+    Route::put('/projects/{project}/tasks/{task}/update', [TaskManagementController::class, 'update'])->name('taskmanagement.update');
     Route::delete('/projects/{project}/tasks/{task}', [TaskManagementController::class, 'destroy'])->name('taskmanagement.destroy');
     Route::post('/projects/{project}/tasks/reorder', [TaskManagementController::class, 'reorder'])->name('taskmanagement.reorder');
 

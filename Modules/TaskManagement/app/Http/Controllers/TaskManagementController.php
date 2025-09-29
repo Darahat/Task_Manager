@@ -46,7 +46,7 @@ class TaskManagementController extends Controller
      */
     public function create($project = null)
     {
-        $projects = Project::forUser(Auth::id())->orderBy('name')->get();
+         $projects = Project::forUser(Auth::id())->orderBy('name')->get();
         $selectedProject = null;
 
         if ($project) {
@@ -116,14 +116,16 @@ class TaskManagementController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        $request->validate([
+
+        // dd($request->all());
+         $request->validate([
             'name' => 'required|string|max:255',
             'project_id' => 'nullable|exists:projects,id',
         ]);
 
-        $task = Task::forUser(Auth::id())->findOrFail($id);
+        $task = Task::forUser(Auth::id())->findOrFail($request->task_id);
         $task->update([
             'name' => $request->name,
             'project_id' => $request->project_id,

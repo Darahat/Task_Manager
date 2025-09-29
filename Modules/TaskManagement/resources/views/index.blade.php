@@ -27,7 +27,7 @@
             <!-- Header -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6">
                 <div class="flex justify-between items-center">
-                    <h1 class="text-3xl font-bold text-gray-800">Task Management</h1>
+                    <h1 class="text-3xl font-bold text-gray-800">{{$projectModel->name}}</h1>
                     <button onclick="showCreateModal()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition duration-200">
                         Add New Task
                     </button>
@@ -65,11 +65,11 @@
                                         </div>
                                     </div>
                                     <div class="flex space-x-2">
-                                        <button onclick="editTask({{ $task->id }}, '{{ $task->name }}')"
+                                        <button onclick="editTask({{ $task->id }},'{{ $task->name }}','{{$projectModel->id}}')"
                                                 class="text-blue-600 hover:text-blue-800 px-3 py-1 rounded transition duration-200">
                                             Edit
                                         </button>
-                                        <button onclick="deleteTask({{ $task->id }})"
+                                        <button onclick="deleteTask('{{ $task->id}}','{{$projectModel->id}}')"
                                                 class="text-red-600 hover:text-red-800 px-3 py-1 rounded transition duration-200">
                                             Delete
                                         </button>
@@ -100,6 +100,7 @@
                 @csrf
                 <div class="mb-4">
                     <label for="taskName" class="block text-sm font-medium text-gray-700 mb-2">Task Name</label>
+                    <input type="text" hidden name="project_id" id="project_id" value="{{$projectModel->id}}">
                     <input type="text" id="taskName" name="name"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                            placeholder="Enter task name" required>
@@ -149,8 +150,10 @@
             document.getElementById('taskName').focus();
         }
 
-        function editTask(id, name) {
+            function editTask(id, name, project_id) {
+            console.log('editTask called with:', {id, name, project_id});
             editingTaskId = id;
+            console.log('editingTaskId set to:', editingTaskId);
             document.getElementById('modalTitle').textContent = 'Edit Task';
             document.getElementById('taskName').value = name;
             document.getElementById('taskModal').classList.remove('hidden');
@@ -164,10 +167,11 @@
             editingTaskId = null;
         }
 
-        function deleteTask(id) {
+        function deleteTask(id,project_id) {
             if (confirm('Are you sure you want to delete this task?')) {
                 $.ajax({
-                    url: `/tasks/${id}`,
+
+                    url: `/projects/${project_id}/tasks/${id}`,
                     method: 'DELETE',
                     success: function(response) {
                         if (response.success) {
@@ -182,22 +186,24 @@
         }
 
         function updateTaskOrder() {
-            const taskIds = [];
-            document.querySelectorAll('.task-item').forEach((item, index) => {
-                taskIds.push(item.getAttribute('data-id'));
-                // Update priority number display
-                const priorityBadge = item.querySelector('.w-8.h-8');
-                if (priorityBadge) {
-                    priorityBadge.textContent = index + 1;
-                }
-            });
+    const taskIds = [];
+    const projectId = document.getElementById('project_id').value; // Get project ID
 
-            $.ajax({
-                url: '/tasks/reorder',
-                method: 'POST',
-                data: {
-                    task_ids: taskIds
-                },
+    document.querySelectorAll('.task-item').forEach((item, index) => {
+        taskIds.push(item.getAttribute('data-id'));
+        const priorityBadge = item.querySelector('.w-8.h-8');
+        if (priorityBadge) {
+            priorityBadge.textContent = index + 1;
+        }
+    });
+
+    $.ajax({
+        url: `/projects/${projectId}/tasks/reorder`, // Fixed URL
+        method: 'POST',
+        data: {
+            task_ids: taskIds
+        },
+
                 success: function(response) {
                     console.log('Tasks reordered successfully');
                 },
@@ -213,34 +219,62 @@
             e.preventDefault();
 
             const formData = new FormData(this);
-            const url = editingTaskId ? `/tasks/${editingTaskId}` : '/tasks';
-            const method = editingTaskId ? 'PUT' : 'POST';
+            const projectId = document.getElementById('project_id').value;
 
-            // Add method override for PUT requests
             if (editingTaskId) {
-                formData.append('_method', 'PUT');
-            }
+                alert(editingTaskId);
+                // Handle PUT request for editing
+                const putData = {
+                    name: formData.get('name'),
+                    project_id: formData.get('project_id'),
+                    task_id: editingTaskId,
+                    _token: formData.get('_token')
+                };
 
-            $.ajax({
-                url: url,
-                method: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    if (response.success) {
-                        location.reload();
+                $.ajax({
+                    url: `/projects/${projectId}/tasks/${editingTaskId}/update`,
+                    type: 'PUT',
+                    data: putData,
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            location.reload();
+                        }
+                    },
+                    error: function(xhr) {
+                        let message = 'An error occurred. Please try again.';
+                        if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            const errors = xhr.responseJSON.errors;
+                            message = Object.values(errors).flat().join('\n');
+                        }
+                        alert(message);
                     }
-                },
-                error: function(xhr) {
-                    let message = 'An error occurred. Please try again.';
-                    if (xhr.responseJSON && xhr.responseJSON.errors) {
-                        const errors = xhr.responseJSON.errors;
-                        message = Object.values(errors).flat().join('\n');
+                });
+            } else {
+                // Handle POST request for creating
+                $.ajax({
+                    url: `/projects/${projectId}/tasks`,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            location.reload();
+                        }
+                    },
+                    error: function(xhr) {
+                        let message = 'An error occurred. Please try again.';
+                        if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            const errors = xhr.responseJSON.errors;
+                            message = Object.values(errors).flat().join('\n');
+                        }
+                        alert(message);
                     }
-                    alert(message);
-                }
-            });
+                });
+            }
         });
 
         // Close modal when clicking outside
