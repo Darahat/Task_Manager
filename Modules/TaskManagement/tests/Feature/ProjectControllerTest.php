@@ -19,6 +19,9 @@ class ProjectControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
+        
+        // Create a test user for authentication
         $this->user = User::factory()->create();
     }
 

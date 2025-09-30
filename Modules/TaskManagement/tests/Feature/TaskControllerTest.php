@@ -19,6 +19,9 @@ class TaskControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
+        
+        // Create a test user and project for authentication and testing
         $this->user = User::factory()->create();
         $this->project = Project::factory()->create(['user_id' => $this->user->id]);
     }

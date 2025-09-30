@@ -56,15 +56,19 @@ php artisan key:generate
 
 3. Open `.env` file in a text editor and configure your database settings:
 ```env
-DB_CONNECTION=sqlite
-DB_DATABASE=database/database.sqlite
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=task_management
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
 ```
 
 ### Step 5: Database Setup
 
-1. Create the database file (for SQLite):
-```bash
-touch database/database.sqlite
+1. Create a MySQL database named `task_management`:
+```sql
+CREATE DATABASE task_management;
 ```
 
 2. Run database migrations:
@@ -134,7 +138,7 @@ task_management/
 
 - **Backend**: Laravel 11 (PHP Framework)
 - **Frontend**: Blade Templates + Tailwind CSS + jQuery
-- **Database**: SQLite (default) or MySQL
+- **Database**: MySQL (primary) or SQLite (alternative)
 - **Build Tool**: Vite
 - **Drag & Drop**: SortableJS
 - **Architecture**: Modular (using nwidart/laravel-modules)
